@@ -1,0 +1,19 @@
+#navbar {
+  height: 200px; 
+}
+.nav {
+  height: 200px; 
+}
+.card{
+  border-radius: 5px; 
+}
+.card-heading {
+  border-radius: 5px; 
+}
+h1 {
+  font-family: 'Sigmar One', cursive;
+    font-size: 4em; 
+}
+.card-title {
+  margin-top: 10px;
+}
