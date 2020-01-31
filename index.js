@@ -1,41 +1,46 @@
 const inquirer = require('inquirer'); 
-var Manager = require('./manager'); 
-var Engineer = require('./engineer'); 
-var Intern = require('./intern'); 
+const Manager = require('./lib/manager.js'); 
+const Engineer = require('./lib/engineer'); 
+const Intern = require('./lib/intern'); 
+const fs = require('fs');
+const util = require("util");
 
 
-getTeam(); 
-const team = [];
+const readFileAsync = util.promisify(fs.readFile);
+const appendFileAsync = util.promisify(fs.appendFile);
+const writeFileAsync = util.promisify(fs.writeFile);
+
+//getTeam(); 
+const manager = []; 
+const engineers = [];
+const interns = [];
+const team = []; 
 //Create manager function
 //ask for name, id, title, email, officeNumber from user
 const createManager = () => {
   console.log('Please build out your team')
-  inquirer.prompt(
-  [{
-      type: input, 
-      message: "Who is your team manager", 
-      name: "name"
-    },
-    {
-      type: input, 
-      message: "What is your managers ID?", 
-      name: "ID"
-    },{
-      type: input, 
-      message: "Who is your managers title?", 
-      name: "title"
-    },{
-      type: input, 
-      message: "Who is your managers email?", 
-      name: "email"
-    },{
-      type: input, 
-      message: "Who is your managers office?", 
-      name: "office"
-      }
-    ]).then((answers)=>{
-      const newManager = new Manager(answers.name, answers.ID, answers.title, answers.email, 
-        answers.office); 
+  inquirer  
+    .prompt([
+      {
+        type: "input", 
+        message: "Who is your team manager", 
+        name: "name"
+      },  
+      {
+        type: "input", 
+        message: "What is your managers ID?", 
+        name: "ID"
+      },{
+        type: "input", 
+        message: "What is your managers email?", 
+        name: "email"
+      },{
+        type: "input", 
+        message: "What is your managers office number?", 
+        name: "officeNumber"
+        }
+    ]).then(({name, ID, email, officeNumber})=>{
+      const newManager = new Manager(name, ID, email, officeNumber); 
       team.push(newManager); 
       createTeam(); 
     })
@@ -43,7 +48,7 @@ const createManager = () => {
 const createTeam = () => {
   inquirer.prompt(
     [{ 
-      type: list, 
+      type: "list", 
       message: 'The role of the employee to add?',
       name: "teamMember",
       choices: [
@@ -61,66 +66,116 @@ const createTeam = () => {
         addIntern();
       break;
       default: 
-        buildTeam(); 
+        renderTeam(team);
     }
   })
 }
 const addEngineer = () => {
   inquirer.prompt(
     [{
-        type: input, 
+        type: "input", 
         message: "Who is your engineers name?", 
         name: "name"
       },
       {
-        type: input, 
+        type: "input", 
         message: "What is your engineers ID?", 
-        name: "ID"
+        name: "id"
       },{
-        type: input, 
-        message: "Who is your engineers title?", 
-        name: "title"
-      },{
-        type: input, 
+        type: "input", 
         message: "Who is your engineers email?", 
         name: "email"
       },{
-        type: input, 
-        message: "Who is your engineers gitHub?", 
-        name: "gitHub"
+        type: "input", 
+        message: "Who is your engineers github?", 
+        name: "github"
       }
-  ]).then((answers)=>{
-    const newEngineer = new Engineer(answers.name, answers.ID, answers.title, answers.email, answers.gitHub);
+  ]).then(({name, id, email, github})=>{
+    const newEngineer = new Engineer(name, id, email, github);
+    //team.push(newEngineer);
     team.push(newEngineer);
+    createTeam();
   })
-}
-const addIntern = () => {
+} 
+  const addIntern = () => {
   inquirer.prompt(
     [{
-        type: input, 
+        type: "input", 
         message: "Who is your interns name", 
         name: "name"
       },
       {
-        type: input, 
+        type: 'input', 
         message: "What is your interns ID?", 
-        name: "ID"
+        name: "id"
       },{
-        type: input, 
-        message: "Who is your interns title?", 
-        name: "title"
-      },{
-        type: input, 
+        type: 'input', 
         message: "Who is your interns email?", 
         name: "email"
       },{
-        type: input, 
+        type: 'input', 
         message: "Who is your interns School?", 
         name: "school"
       }
-    ]).then((answers)=>{
-      const newIntern = new Intern(answers.name, answers.ID, answers.title, answers.email,answers.school);  
+    ]).then(({name, id, email, school})=>{
+      const newIntern = new Intern(name, id, email,school); 
       team.push(newIntern); 
+      //team.push(newIntern); 
+      createTeam();
+      //renderIntern(newIntern);
     })
 }
+ createManager();
+  // //build team or run  test///
+  // const buildTeam =() => {
 
+function renderTeam(team){
+  try{
+  team.forEach(async teamMember => {
+    if(teamMember.getRole() === 'Manager'){
+      const { name, id, email, officeNumber } = teamMember; 
+      const managerHTML = await readFileAsync('./templates/manager.html', 'utf8');
+      const updatedHTML = managerHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{officeNumber}}`, `${officeNumber}`)
+      const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
+    }else if(teamMember.getRole() === 'Engineer'){
+     console.log(teamMember);
+      const { name, id, email, github } = teamMember; 
+      const engineerHTML= await readFileAsync('./templates/engineer.html', 'utf8');
+      const updatedHTML = engineerHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{github}}`, `${github}`)
+      const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML,'utf8'); 
+    }else if(teamMember.getRole() === 'Intern'){
+      const { name, id, email, school } = teamMember; 
+      const internHTML = await readFileAsync('./templates/intern.html', 'utf8');
+      const updatedHTML = internHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{School}}`, `${school}`)
+
+      const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
+      }
+
+  }
+
+  }catch(err){
+    console.log(err);
+  }
+}
+
+
+async function renderTeamHTML(){
+  try{
+    const mainHTML = await readFileAsync('./templates/main.html', 'utf8');
+    console.log(mainHTML);
+    const teamHTML = await readFileAsync('./templates/team.html', 'utf8');
+    //console.log(teamHTML);
+    const updatedHTML = teamHTML.replace(`{{team}}`, `${mainHTML}`)
+
+
+    await writeFileAsync('./templates/team.html', updatedHTML, 'utf8');
+
+
+
+
+  }catch(err){
+    console.log(err);
+  }
+}
+
+  
