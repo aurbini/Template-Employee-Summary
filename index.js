@@ -130,58 +130,78 @@ const addEngineer = () => {
 
   //  team.forEach(async teamMember => {
 
-//Put the data into each template and append it all to empty
+//Put the data into each template and appvend it all to empty
 //main.js file 
 async function renderTeam(team){
   try{
+    appendString = '';
     for(let i = 0; i < team.length;i++){
       let teamMember = team[i];
       if(teamMember.getRole() === 'Manager'){
         const { name, id, email, officeNumber } = teamMember; 
         const managerHTML = await readFileAsync('./templates/manager.html', 'utf8');
         const updatedHTML = managerHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{officeNumber}}`, `${officeNumber}`)
-        const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
+        appendString += updatedHTML; 
+        //const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
       }else if(teamMember.getRole() === 'Engineer'){
       console.log(teamMember);
         const { name, id, email, github } = teamMember; 
         const engineerHTML= await readFileAsync('./templates/engineer.html', 'utf8');
         const updatedHTML = engineerHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{github}}`, `${github}`)
-        const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML,'utf8');
-        console.log('append engineer') 
+        //const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML,'utf8');
+        //console.log('append engineer') 
+        appendString += updatedHTML; 
+
       }else if(teamMember.getRole() === 'Intern'){
         const { name, id, email, school } = teamMember; 
         const internHTML = await readFileAsync('./templates/intern.html', 'utf8');
         const updatedHTML = internHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{School}}`, `${school}`)
-        const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
-        console.log('append intern')
+       // const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
+       // console.log('append intern')
+       appendString += updatedHTML; 
+
       }
     } 
   }catch(err){
     console.log(err);
   }
-  console.log('finished rendering components');
-  renderTeamHTML();
+  fs.readFile("./templates/team.html", "utf8", function(err, data){
+    if(err){
+      return console.log(err);
+    }
+    data = data.replace("{{team}}", appendString);
+
+    fs.writeFile("./output/teamHTML.html", data, function(err){
+      if(err){
+        return console.log(err);
+      }
+      console.log("html complete")
+    })
+  })
+
+  // console.log('finished rendering components');
+  // renderTeamHTML();
 }
 
 
- async function renderTeamHTML(){
-      try{
-    const mainHTML = await readFileAsync('./templates/main.html', 'utf8');
-    console.log(mainHTML);
-    const teamHTML = await readFileAsync('./templates/team.html', 'utf8');
-    //console.log(teamHTML);
-    const updatedHTML = teamHTML.replace(`{{team}}`, `${mainHTML}`)
+//  async function renderTeamHTML(){
+//       try{
+//     const mainHTML = await readFileAsync('./templates/main.html', 'utf8');
+//     console.log(mainHTML);
+//     const teamHTML = await readFileAsync('./templates/team.html', 'utf8');
+//     //console.log(teamHTML);
+//     const updatedHTML = teamHTML.replace(`{{team}}`, `${mainHTML}`)
 
 
-    await writeFileAsync('./templates/team.html', updatedHTML, 'utf8');
+//     await writeFileAsync('./templates/team.html', updatedHTML, 'utf8');
 
 
 
 
-  }catch(err){
-      console.log(err);
-  }
-}
+//   }catch(err){
+//       console.log(err);
+//   }
+// }
 
   
 
