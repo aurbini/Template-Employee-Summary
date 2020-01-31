@@ -1,22 +1,22 @@
+//Node Modules Needed
 const inquirer = require('inquirer'); 
+const util = require("util");
+const fs = require('fs');
+//Importing Employee Classes
 const Manager = require('./lib/manager.js'); 
 const Engineer = require('./lib/engineer'); 
 const Intern = require('./lib/intern'); 
-const fs = require('fs');
-const util = require("util");
 
-
+//Promisifying FS methods
 const readFileAsync = util.promisify(fs.readFile);
 const appendFileAsync = util.promisify(fs.appendFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
-//getTeam(); 
-const manager = []; 
-const engineers = [];
-const interns = [];
+//making empty team in order to push data
+//collected from user inputs to
 const team = []; 
-//Create manager function
-//ask for name, id, title, email, officeNumber from user
+//ask the user for the name, id, title, email, etc 
+//of each member of their team until team is complete
 const createManager = () => {
   console.log('Please build out your team')
   inquirer  
@@ -66,6 +66,7 @@ const createTeam = () => {
         addIntern();
       break;
       default: 
+      //function to break out of inquirer and render team
         renderTeam(team);
     }
   })
@@ -120,15 +121,16 @@ const addEngineer = () => {
     ]).then(({name, id, email, school})=>{
       const newIntern = new Intern(name, id, email,school); 
       team.push(newIntern); 
-      //team.push(newIntern); 
       createTeam();
-      //renderIntern(newIntern);
     })
 }
  createManager();
   // //build team or run  test///
   // const buildTeam =() => {
 
+
+//Put the data into each template and append it all to empty
+//main.js file 
 function renderTeam(team){
   try{
   team.forEach(async teamMember => {
@@ -149,9 +151,9 @@ function renderTeam(team){
       const updatedHTML = internHTML.replace(`{{Name}}`, `${name}`).replace(`{{ID}}`, `${id}`).replace(`{{Email}}`, `${email}`).replace(`{{School}}`, `${school}`)
 
       const mainHTML = await appendFileAsync('./templates/main.html', updatedHTML, 'utf8'); 
-      }
-
+    }
   }
+
 
   }catch(err){
     console.log(err);
@@ -159,8 +161,8 @@ function renderTeam(team){
 }
 
 
-async function renderTeamHTML(){
-  try{
+// async function renderTeamHTML(){
+//   try{
     const mainHTML = await readFileAsync('./templates/main.html', 'utf8');
     console.log(mainHTML);
     const teamHTML = await readFileAsync('./templates/team.html', 'utf8');
@@ -173,9 +175,9 @@ async function renderTeamHTML(){
 
 
 
-  }catch(err){
-    console.log(err);
-  }
-}
+//   }catch(err){
+//     console.log(err);
+//   }
+// }
 
   
